@@ -2,6 +2,7 @@ import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { Mesh, Material } from "three";
+import gsap from "gsap";
 import * as dat from "dat.gui";
 
 /**
@@ -15,7 +16,28 @@ const canvas = document.querySelector("canvas.webgl");
 
 // Scene
 const scene = new THREE.Scene();
+//FUNCTION
+const randomPositionScale = function (position, dimension, rotation) {
+  position.position.x = (Math.random() - 0.5) * 10;
+  position.position.y = (Math.random() - 0.5) * 10;
+  position.position.z = (Math.random() - 0.5) * 10;
 
+  const scale = Math.random();
+  dimension.scale.set(scale, scale, scale);
+
+  rotation.rotation.x = Math.random() * Math.PI;
+  rotation.rotation.y = Math.random() * Math.PI;
+};
+const gsapAnimation = function (object) {
+  gsap.fromTo(
+    object.rotation,
+    { duration: 10, x: 0, y: 1 },
+    { duration: 100, x: 100, y: 200 }
+  );
+};
+const gsapAnimation2 = function (object) {
+  gsap.fromTo(object.position, { x: 100 }, { duration: 4, x: 0 });
+};
 /**
  * Textures
  */
@@ -33,10 +55,15 @@ const Texture_8 = textureLoader.load("/textures/matcaps/8.png");
 const Texture_9 = textureLoader.load("/textures/matcaps/9.jpg");
 const Texture_10 = textureLoader.load("/textures/matcaps/10.jpg");
 const Texture_11 = textureLoader.load("/textures/matcaps/11.jpg");
-const Texture_12= textureLoader.load("/textures/matcaps/12.jpg");
+const Texture_12 = textureLoader.load("/textures/matcaps/12.jpg");
+//WOOD MATERIAL
+const wood_ao = textureLoader.load('/material/WOOD/ambientOcclusion.jpg')
+const wood_height = textureLoader.load('/material/WOOD/height.jpg')
+const wood_normal = textureLoader.load('/material/WOOD/normal.jpg')
+const wood_rough = textureLoader.load('/material/WOOD/roughness.jpg')
+const wood_base = textureLoader.load('/material/WOOD/basecolor.jpg')
 
 
-Texture_3.magFilter= THREE.NearestFilter
 /**
  * Object
  */
@@ -45,33 +72,57 @@ Texture_3.magFilter= THREE.NearestFilter
 // const Geometry_Ball =new THREE.Mesh( new THREE.SphereGeometry(0.5, 64, 64),Material_Tex_1);
 
 const Geometry_Ball = new THREE.SphereGeometry(0.5, 64, 64);
-const Material_Tex_1 = new THREE.MeshToonMaterial();
-const Mesh_1 = new THREE.Mesh(Geometry_Ball, Material_Tex_1);
-
+const Material_Tex_1 = new THREE.MeshStandardMaterial();
+// Material_Tex_1.matcap = Texture_4;
+// const Mesh_1 = new THREE.Mesh(Geometry_Ball, Material_Tex_1);
+Material_Tex_1.map =wood_base
+Material_Tex_1.aoMapIntensity=1
+Material_Tex_1.displacementMap = wood_height
+Material_Tex_1.displacementScale = 0.05
+Material_Tex_1.roughnessMap = wood_rough
+Material_Tex_1.normalMap =wood_normal
+Material_Tex_1.aoMap= wood_ao
+// Material_Tex_1.transparent = true
 //!
 const Geometry_Cube = new THREE.BoxGeometry(1, 1, 1);
 const Material_Tex_2 = new THREE.MeshMatcapMaterial();
-const Mesh_2 = new THREE.Mesh(Geometry_Cube, Material_Tex_2);
-Material_Tex_2.matcap = Texture_11;
+
+// const Mesh_2 = new THREE.Mesh(Geometry_Cube, Material_Tex_2);
+Material_Tex_2.matcap = Texture_7;
 //!
 const Geometry_Cylinder = new THREE.CylinderGeometry(0.5, 0.5, 1, 64);
 const Material_Tex_3 = new THREE.MeshMatcapMaterial();
-const Mesh_3 = new THREE.Mesh(Geometry_Cylinder, Material_Tex_3);
-Material_Tex_3.matcap = Texture_8;
 
-scene.add(
-    Mesh_1, Mesh_2, Mesh_3);
+// const Mesh_3 = new THREE.Mesh(Geometry_Cylinder, Material_Tex_3);
+Material_Tex_3.matcap = Texture_10;
 
-Mesh_2.position.x = -2;
-Mesh_3.position.x = 2;
+// scene.add(
+//     Mesh_1, Mesh_2, Mesh_3);
 
+for (let object = 0; object < 70; object++) {
+  const Mesh_1 = new THREE.Mesh(Geometry_Ball, Material_Tex_1);
+  const Mesh_2 = new THREE.Mesh(Geometry_Cube, Material_Tex_2);
+  const Mesh_3 = new THREE.Mesh(Geometry_Cylinder, Material_Tex_3);
 
+  randomPositionScale(Mesh_1, Mesh_1, Mesh_1);
+  randomPositionScale(Mesh_2, Mesh_2, Mesh_2);
+  randomPositionScale(Mesh_3, Mesh_3, Mesh_3);
+
+  gsapAnimation(Mesh_2);
+  gsapAnimation(Mesh_1);
+  scene.add(Mesh_1);
+}
+
+//!-- GUI DEBUG
+gui.add(Material_Tex_1, 'roughness').min(0).max(1).step(0.01)
+gui.add(Material_Tex_1, "aoMapIntensity").min(0).max(10).step(0.0001);
+gui.add(Material_Tex_1, "displacementScale").min(0).max(1).step(0.0001);
 
 
 //! LIGHTS
-const ambientLight = new THREE.AmbientLight("purple", 0.5);
+const ambientLight = new THREE.AmbientLight("white", 0.5);
 scene.add(ambientLight);
-const pointLight = new THREE.PointLight("blue", 0.5);
+const pointLight = new THREE.PointLight("white", 0.5);
 pointLight.position.x = 2;
 pointLight.position.y = 2;
 pointLight.position.z = 2;
@@ -133,13 +184,6 @@ const clock = new THREE.Clock();
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
-  Mesh_1.rotation.y = 1.5 * elapsedTime;
-  Mesh_1.rotation.x = 1.5 * elapsedTime;
-  Mesh_2.rotation.y = 2 * elapsedTime;
-  Mesh_2.rotation.x = 2 * elapsedTime;
-  Mesh_3.rotation.y = 1 * elapsedTime;
-  Mesh_3.rotation.x = 1 * elapsedTime;
-  
 
 
   // Update controls
