@@ -277,8 +277,8 @@ window1.rotation.y = -1.5;
 
 house.add(window1, );
 
-const axesHelper = new THREE.AxesHelper(5);
-scene.add(axesHelper);
+// const axesHelper = new THREE.AxesHelper(5);
+// scene.add(axesHelper);
 
 //-FONTS
 // const fontLoader = new THREE.FontLoader();
